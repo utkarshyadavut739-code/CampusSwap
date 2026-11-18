@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>Everything a hostel needs, already on your campus.</h1>
+    <p>Buy secondhand textbooks, cycles, and dorm gear from students down the hall — or clear out your room before you graduate.</p>
+    <a class="btn btn-big" href="#sell">+ Tack up an ad</a>
+    <div class="stats">
+      <div class="stat"><strong>{{ active_count }}</strong><span>active listings</span></div>
+      <div class="stat"><strong>{{ hostels|length }}</strong><span>hostel blocks</span></div>
+      <div class="stat"><strong>₹0</strong><span>listing fee</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="browse" class="container section">
+  <h2>What are you looking for?</h2>
+
+  <div class="filters">
+    <input id="f-q" type="search" placeholder="Search listings" aria-label="Search listings">
+    <select id="f-condition" aria-label="Condition">
+      <option value="">Any condition</option>
+      {% for key, label in conditions.items() %}
+        <option value="{{ key }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select id="f-hostel" aria-label="Hostel block">
+      <option value="">Any block</option>
+      {% for h in hostels %}<option value="{{ h }}">{{ h }}</option>{% endfor %}
+    </select>
+    <select id="f-sort" aria-label="Sort by">
+      <option value="newest">Newest first</option>
+      <option value="price_asc">Price: low to high</option>
+      <option value="price_desc">Price: high to low</option>
+      <option value="hostel">Hostel: A to Z</option>
+    </select>
+    <label class="price-filter">
+      <span id="f-price-label">Any price</span>
+      <input id="f-price" type="range" min="0" max="50000" step="500" value="50000">
+    </label>
+    <button id="f-reset" class="btn btn-ghost btn-small" type="button">Reset all filters</button>
+  </div>
+
+  <div class="chips" id="chips">
+    <button class="chip active" data-cat="All" type="button">🗂 All</button>
+    {% for c in categories %}
+      <button class="chip" data-cat="{{ c }}" type="button">{{ c }}</button>
+    {% endfor %}
+    <button class="chip" data-cat="Free Stuff" type="button">🎁 Free Stuff</button>
+  </div>
+
+  <h2 class="board-title">Fresh on the board <span id="count" class="muted"></span></h2>
+  <div id="grid" class="grid"></div>
+  <p id="empty" class="empty" hidden>Nothing pinned here yet. Try a different category or clear your search.</p>
+</section>
+
+<section class="container section">
+  <h2>Selling takes three minutes</h2>
+  <p class="muted">No verification queue, no shipping labels — just students trading with students on the same campus.</p>
+  <div class="steps">
+    <div class="step"><span class="num">1</span><h3>Snap a photo</h3><p>Take one clear photo of the item where it actually sits in your room.</p></div>
+    <div class="step"><span class="num">2</span><h3>Set your price</h3><p>Name a fair price. Check similar listings above to price it sensibly.</p></div>
+    <div class="step"><span class="num">3</span><h3>Meet on campus</h3><p>Pick a common spot like the mess hall or library to hand it over.</p></div>
+  </div>
+</section>
+
+<section id="sell" class="container section">
+  <h2>Tack it to the board</h2>
+  {% if current_user %}
+  <form id="sell-form" class="card-box form-grid" enctype="multipart/form-data" novalidate>
+    <label class="field span2">Item title
+      <input name="title" maxlength="100" required>
+    </label>
+    <label class="field">Category
+      <select name="category" required>
+        {% for c in categories %}<option>{{ c }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="field">Price (₹)
+      <input name="price" type="number" min="0" step="1" required>
+      <small class="muted">Enter 0 to give it away free.</small>
+    </label>
+    <label class="field">Condition
+      <select name="condition" required>
+        {% for key, label in conditions.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="field">Hostel / block
+      <select name="hostel" required>
+        {% for h in hostels %}
+          <option {% if me and me.hostel == h %}selected{% endif %}>{{ h }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="field span2">Description
+      <textarea name="description" rows="3" maxlength="1000"></textarea>
+    </label>
+    <label class="field">Contact number
+      <input name="phone" inputmode="numeric" maxlength="10" value="{{ me.phone if me else '' }}" required>
+      <small class="muted">Only shown to logged-in students.</small>
+    </label>
+    <label class="field">Photo (optional, max 5 MB)
+      <input name="photo" id="photo" type="file" accept="image/png,image/jpeg,image/webp">
+    </label>
+    <img id="photo-preview" class="photo-preview span2" alt="" hidden>
+    <p id="sell-error" class="error span2" hidden></p>
+    <div class="span2"><button class="btn btn-big" type="submit">Tack it up</button></div>
+  </form>
+  {% else %}
+  <div class="card-box center">
+    <p>Log in with your student account to post an ad.</p>
+    <a class="btn" href="{{ url_for('auth.login', next='/#sell') }}">Log in</a>
+    <a class="btn btn-ghost" href="{{ url_for('auth.register') }}">Create account</a>
+  </div>
+  {% endif %}
+</section>
+
+<section id="safety" class="container section">
+  <h2>Trade smart, stay safe</h2>
+  <div class="steps">
+    <div class="step"><h3>Meet in common areas</h3><p>Mess halls, libraries, and hostel gates work better than someone's room.</p></div>
+    <div class="step"><h3>Check the item first</h3><p>Test electronics and inspect items in person before paying.</p></div>
+    <div class="step"><h3>Keep payments simple</h3><p>Cash or UPI on handover — avoid paying for anything before you see it.</p></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% if current_user %}<script src="{{ url_for('static', filename='js/sell.js') }}"></script>{% endif %}
+{% endblock %}

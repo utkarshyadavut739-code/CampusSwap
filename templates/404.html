@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Not found — Tack{% endblock %}
+{% block content %}
+<section class="container auth-wrap">
+  <div class="card-box center">
+    <h1>Nothing pinned here</h1>
+    <p class="muted">That page doesn't exist, or the listing was removed.</p>
+    <a class="btn" href="{{ url_for('listings.index') }}">Back to the board</a>
+  </div>
+</section>
+{% endblock %}

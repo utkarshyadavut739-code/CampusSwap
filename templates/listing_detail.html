@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ listing.title }} — Tack{% endblock %}
+{% block content %}
+<section class="container section detail">
+  <a href="{{ url_for('listings.index') }}#browse" class="muted">← Back to the board</a>
+
+  <div class="detail-grid">
+    <div>
+      {% if image %}
+        <img class="detail-img" src="{{ image }}" alt="{{ listing.title }}">
+      {% else %}
+        <div class="detail-img placeholder">📦</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {% if listing.status == 'sold' %}<span class="badge badge-sold">Sold</span>{% endif %}
+      <h1>{{ listing.title }}</h1>
+      <p class="price big">{% if listing.price == 0 %}Free{% else %}₹{{ '{:,}'.format(listing.price) }}{% endif %}</p>
+      <p>
+        <span class="badge">{{ listing.category }}</span>
+        <span class="badge">{{ condition_label }}</span>
+        <span class="badge">{{ listing.hostel }}</span>
+      </p>
+      {% if listing.description %}<p>{{ listing.description }}</p>{% endif %}
+      <p class="muted">Posted by {{ listing.seller_name }} on {{ listing.created_at.strftime('%d %b %Y') }}</p>
+
+      {% if is_owner %}
+        <p class="note">This is your listing. <a href="{{ url_for('listings.my_listings_page') }}">Manage it</a>.</p>
+      {% elif listing.status == 'sold' %}
+        <p class="note">This item has been sold.</p>
+      {% elif not current_user %}
+        <p class="note">
+          <a href="{{ url_for('auth.login', next='/listing/' ~ listing.id) }}">Log in</a>
+          to contact the seller.
+        </p>
+      {% else %}
+        <div class="card-box" id="contact-box" data-id="{{ listing.id }}">
+          <button id="show-contact" class="btn" type="button">Show seller's number</button>
+          <div id="contact-info" hidden>
+            <p>Call <strong id="contact-phone"></strong></p>
+            <button id="copy-phone" class="btn btn-ghost btn-small" type="button">Copy number</button>
+          </div>
+          <hr>
+          <form id="msg-form">
+            <label class="field">Or send a message
+              <textarea name="body" rows="3" maxlength="500" placeholder="Hi, is this still available?"></textarea>
+            </label>
+            <p id="msg-feedback" class="error" hidden></p>
+            <button class="btn" type="submit">Send message</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if current_user and not is_owner and listing.status == 'active' %}
+<script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+{% endif %}
+{% endblock %}

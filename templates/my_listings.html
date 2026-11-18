@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}My listings — Tack{% endblock %}
+{% block content %}
+<section class="container section">
+  <h1>My listings</h1>
+  <div id="mine" class="mine-list"></div>
+  <p id="mine-empty" class="empty" hidden>You haven't posted anything yet. <a href="{{ url_for('listings.index') }}#sell">Tack up your first ad</a>.</p>
+</section>
+
+<section class="container section">
+  <h2>Messages from buyers</h2>
+  <div id="inbox" class="inbox"></div>
+  <p id="inbox-empty" class="empty" hidden>No messages yet.</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/my_listings.js') }}"></script>
+{% endblock %}
